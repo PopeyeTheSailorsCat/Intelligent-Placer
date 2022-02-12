@@ -48,4 +48,26 @@ Intelligent Placer будет оформлен в виде python-библиот
 Они все не слишком большого размера, чтобы можно было больше помещать в многоугольники.
 
 # Предметы
-![Картиночка](https://github.com/PopeyeTheSailorsCat/Intelligent-Placer/tree/main/imgs/pen.jpg)
+## Ручка  
+![Ручка](https://github.com/PopeyeTheSailorsCat/Intelligent-Placer/raw/main/imgs/pen.jpg)  
+## Крышка
+![Крышка](https://github.com/PopeyeTheSailorsCat/Intelligent-Placer/raw/main/imgs/cap.jpg)  
+## Кубик
+![Кубик](https://github.com/PopeyeTheSailorsCat/Intelligent-Placer/raw/main/imgs/dice.jpg)  
+## Медиатор
+![Медиатор](https://github.com/PopeyeTheSailorsCat/Intelligent-Placer/raw/main/imgs/mediator.jpg)  
+## Зажигалка
+![Зажигалка](https://github.com/PopeyeTheSailorsCat/Intelligent-Placer/raw/main/imgs/lighter.jpg)  
+## Значок
+![Значок](https://github.com/PopeyeTheSailorsCat/Intelligent-Placer/raw/main/imgs/badge.jpg)   
+## Пульт
+![Пульт](https://github.com/PopeyeTheSailorsCat/Intelligent-Placer/raw/main/imgs/controller.jpg)  
+## Конь
+![Конь](https://github.com/PopeyeTheSailorsCat/Intelligent-Placer/raw/main/imgs/horse.jpg)  
+## Батарейка
+![Батарейка](https://github.com/PopeyeTheSailorsCat/Intelligent-Placer/raw/main/imgs/battery.jpg)  
+## Ножницы
+![Ножницы](https://github.com/PopeyeTheSailorsCat/Intelligent-Placer/raw/main/imgs/scissors.jpg)  
+
+# Поверхность для съемки
+![Поверхность](https://github.com/PopeyeTheSailorsCat/Intelligent-Placer/raw/main/imgs/white.jpg)  
