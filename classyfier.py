@@ -14,7 +14,7 @@ from data_handler import get_train_data, get_example_data
 from detection import get_object_boxes, cut_objects_from_image
 
 
-def make_fashion_model(num_classes):
+def make_fashion_model(num_classes):  # using basic model, maybeTODO go to VGG format
     imodel = Sequential()
     imodel.add(Reshape((128, 128, 3), input_shape=(128, 128, 3)))
     imodel.add(Conv2D(4, kernel_size=(3, 3), strides=(1, 1),
@@ -64,7 +64,7 @@ def plot_accuracy(history):
     return history[val_acc][-1]
 
 
-def train_model():
+def train_model():  # using augmentation
     aug = ImageDataGenerator(featurewise_center=False,
                              samplewise_center=False,
                              featurewise_std_normalization=False,
@@ -83,7 +83,7 @@ def train_model():
                              rescale=None)
     batch_size = 4
     X_train, X_test, y_train, y_test, classes = get_train_data()
-    fashion_clf = make_fashion_model(num_classes=classes)
+    fashion_clf = make_fashion_model(num_classes=classes)  # TODO rename all model stuff from lab3
 
     train_X_train = X_train.copy()
     aug.fit(train_X_train)
@@ -106,13 +106,13 @@ def train_model():
     print(max(hist.history['val_accuracy']))
 
 
-def get_best_model(classes=8):
+def get_best_model(classes=8):  # upload best model from repo
     model = make_fashion_model(num_classes=classes)
     model.load_weights('best').expect_partial()
     return model
 
 
-def run_classify_example(classes=8):
+def run_classify_example(classes=8):  # run example of objects classification
     fashion_clf = make_fashion_model(num_classes=classes)
     fashion_clf.load_weights('best').expect_partial()
     data = get_example_data()

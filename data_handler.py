@@ -23,7 +23,7 @@ def get_example_data(show_data=False):
     return example_data
 
 
-def get_path_data(path, show_data=False):
+def get_path_data(path, show_data=False):  # get images from directory
     example_data = []
     path = path
     for file in os.listdir(path):
@@ -34,7 +34,8 @@ def get_path_data(path, show_data=False):
     return example_data
 
 
-def generate_train_img():
+def generate_train_img():  # using for CNN training.
+    # find, cut and resize images for CNN training later.
     from detection import cut_objects_from_image
     from detection import get_object_boxes
     # Генерируем тренировочные наборы
@@ -52,7 +53,7 @@ def generate_train_img():
             imsave(os.path.join(cut_path, f"{indx}_{j}.jpg"), obj)
 
 
-def get_train_data():
+def get_train_data():  # get training data from repos for CNN training
     X = []
     Y = []
     cls_path = 'classifyer_imgs'
@@ -64,25 +65,25 @@ def get_train_data():
             X.append(img)
             Y.append(create_vector(len(folders), indx))
 
-    # counter = dict()
+    # count how many images of each class we have
     from collections import Counter
     counter = Counter()
     for vector in Y:
         counter[np.argmax(vector)] += 1
 
     print(counter)
-    X_train, X_test, y_train, y_test = train_test_split(
+    X_train, X_test, y_train, y_test = train_test_split(  # TODO get this to classifier
         np.array(X), np.array(Y), test_size=0.4, shuffle=True)
     return X_train, X_test, y_train, y_test, len(folders)
 
 
-def create_vector(size, elem):
+def create_vector(size, elem):  # for training CNN data creation. Create onehot vector.
     arr = np.zeros(size)
     arr[elem] = 1
     return arr
 
 
-def create_objects_structure():
+def create_objects_structure():  # using for good objects structure creation
     from detection import get_object_boxes, cut_figure
     path = "imgs_for_structure"
     save_path = "objects_figure"
