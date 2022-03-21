@@ -84,7 +84,8 @@ def slide_obj_over_fig(main_figure, obj, object_area):  # Brute force solution
             roi = main_figure[pos_y:pos_y + obj_y, pos_x:pos_x + obj_x].astype(int)  # take area from figure
             intersect = cv.bitwise_and(roi, obj.astype(int))  # check how we can place object
             if np.sum(intersect) == object_area:  # confirm we can place whole object
-                main_figure[pos_y:pos_y + obj_y, pos_x:pos_x + obj_x] = obj.astype(bool)  # paint object on figure
+                main_figure[pos_y:pos_y + obj_y, pos_x:pos_x + obj_x] = cv.bitwise_and(roi,
+                                                                                       255 - obj)  # paint object on figure
                 # so we can't use this area again
                 # we find location for this object on this figure, so we need to return location on figure and
                 # figure without used area
@@ -128,22 +129,31 @@ def run_epoch_stuff():  # function to show example working for first step
         object_loc.append([y, x])
         if x != -1:  # cant pu object inside.
             plt.imshow(figure, cmap='gray')
+            plt.show()
         else:
             print("nope")
 
-    for obj, location in zip(objects_structures, object_loc):  # plotting object images above figure
-        y_fig, x_fig, *_ = fig_location[0]
-        y, x = location
-        obj_y, obj_x = obj.shape
+    # for obj, location in zip(objects_structures, object_loc):  # plotting object images above figure
+    y_fig, x_fig, *_ = fig_location[0]
+    # y, x = location
+    # obj_y, obj_x = obj.shape
+    fig_y, fig_x = figure.shape
         # there is a better way to do this. # TODO do it better
         # here is main code of putting object image above figure image on initial image
         # (x/y)_fig - place where our figure locate on image
         # (y,x) - location of our object on image
         # obj_(x,y) - size of object
         # 255 * object <- paint white mask in place where is this object structure
-        img[y_fig + y:y_fig + y + obj_y, x_fig + x:x_fig + x + obj_x, 0] = 255 * obj.astype(int)
-        img[y_fig + y:y_fig + y + obj_y, x_fig + x:x_fig + x + obj_x, 1] = 255 * obj.astype(int)
-        img[y_fig + y:y_fig + y + obj_y, x_fig + x:x_fig + x + obj_x, 2] = 255 * obj.astype(int)
+        # roi = img[y_fig + y:y_fig + y + obj_y, x_fig + x:x_fig + x + obj_x, :]
+
+        # img[y_fig + y:y_fig + y + obj_y, x_fig + x:x_fig + x + obj_x, 0] = figure
+        # img[y_fig + y:y_fig + y + obj_y, x_fig + x:x_fig + x + obj_x, 1] = figure
+        # img[y_fig + y:y_fig + y + obj_y, x_fig + x:x_fig + x + obj_x, 2] = figure
+    # plt.imshow(figure)
+    # plt.show()
+    img[y_fig:y_fig + fig_y, x_fig:x_fig + fig_x, 0] = 255 * figure
+    img[y_fig:y_fig + fig_y, x_fig:x_fig + fig_x, 1] = 255 * figure
+    img[y_fig:y_fig + fig_y, x_fig:x_fig + fig_x, 2] = 255 * figure
 
     plt.imshow(img)
     plt.show()
