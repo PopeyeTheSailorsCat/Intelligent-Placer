@@ -222,7 +222,7 @@ Intelligent Placer будет оформлен в виде python-библиот
 Нашли на изображении объекты и фигуру. Получили структуру фигуры.  
 ![Подпись](https://github.com/PopeyeTheSailorsCat/Intelligent-Placer/raw/develop/imgs/epoch_example_2.PNG)  
 Классифицировали объекты, достали их структуру из файлов.  
-![Подпись](https://github.com/PopeyeTheSailorsCat/Intelligent-Placer/raw/develop/imgs/epoch_example_3.png)  
+![Подпись](https://github.com/PopeyeTheSailorsCat/Intelligent-Placer/raw/develop/imgs/epoch_example_3.PNG)  
 Разместили их в объекте, отобразили размещение на исходном изображении.
 ## Что сделать к следующим версиям:
 * Добавить ножницы и ручку в датасет для нейросети
