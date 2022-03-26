@@ -5,10 +5,11 @@ from skimage.color import rgb2gray
 from skimage.filters import threshold_minimum
 from skimage.measure import regionprops
 from skimage.measure import label as sk_measure_label
-import matplotlib.patches as patches
 from PIL import Image, ImageDraw
 import matplotlib.pyplot as plt
 import numpy as np
+from utils import patch_rectangle
+import config
 
 
 def get_largest_area_boxes(mask):
@@ -21,9 +22,9 @@ def get_largest_area_boxes(mask):
     labels = sk_measure_label(~mask)  # splitting the mask into connectivity components
     props = regionprops(
         labels)  # finding the properties of each area (center position, area, bbox, intensity interval, etc.)
-    areas = [prop.area for prop in props]  # we are interested in the areas of the connectivity component
     for prop in props:
-        if prop.area > 1200:  # TODO This is a potentially image-size-dependent hole.
+        img_threshold_percent = config.object_no_less_than_percent_of_img
+        if prop.area > img_threshold_percent * mask.shape[0] * mask.shape[1]:  # clear all low area
             box = prop.bbox
             result_boxes.append(box)
 
@@ -86,15 +87,9 @@ def get_bboxes_example_show(show_data=True):  # example of usage get_object_and_
         edge_boxes, objects_boxes = get_object_and_figure_boxes(main_img)
         ax.flat[indx].imshow(main_img, cmap="gray")
         for box in objects_boxes:
-            min_row, min_col, max_row, max_col = box
-            ax.flat[indx].add_patch(
-                patches.Rectangle((max(min_col - 20, 0), max(min_row - 20, 0)), max_col - min_col + 30,
-                                  max_row - min_row + 50, linewidth=1, edgecolor='r', facecolor='none'))
+            ax.flat[indx].add_patch(patch_rectangle(box, 'r'))
         for box in edge_boxes:
-            min_row, min_col, max_row, max_col = box
-            ax.flat[indx].add_patch(
-                patches.Rectangle((max(min_col - 20, 0), max(min_row - 20, 0)), max_col - min_col + 30,
-                                  max_row - min_row + 50, linewidth=1, edgecolor='b', facecolor='none'))
+            ax.flat[indx].add_patch(patch_rectangle(box, 'b'))
     fix.tight_layout()
     plt.show()
 
@@ -115,8 +110,9 @@ def cut_objects_from_image(image, bboxes, resize=True):
         roi = image[max(min_row - add_area, 0): min(max_row + add_area, img_row),
               max(min_col - add_area, 0): min(max_col + add_area, img_col)]
         im = Image.fromarray(np.uint8(roi))
+        expected_size = config.CNN_expected_img_size
         if resize:
-            im = im.resize((128, 128), Image.ANTIALIAS)  # TODO constant. we need to resize for CNN
+            im = im.resize((expected_size, expected_size), Image.ANTIALIAS)
         img = np.array(im)
         images.append(img)
 

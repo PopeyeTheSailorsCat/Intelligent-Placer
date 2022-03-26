@@ -1,14 +1,16 @@
 import os
-
-from skimage.color import rgb2gray
+from skimage.color import rgb2gray, gray2rgb
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 
+import config
 from data_handler import get_example_data
 from detection import get_object_and_figure_boxes, cut_objects_from_image, cut_figure
 from imageio import imread
+from classifier import get_best_model
 import cv2 as cv
+from utils import patch_rectangle
 
 
 def cut_figure_example():  # example of cutting figure structure
@@ -22,8 +24,7 @@ def cut_figure_example():  # example of cutting figure structure
 
 
 def classify_objects(cut_objects, classes=8):  # interface of using CNN
-    from classyfier import get_best_model
-    model = get_best_model(classes)  # get best model from directory # TODO add best model to repo
+    model = get_best_model(classes)  # get best model from directory
     res = model.predict(np.array(cut_objects))
     return res
 
@@ -43,20 +44,12 @@ def extract_fig_and_objects(img, show_boxes=False):
         fig, ax = plt.subplots()
         ax.imshow(img)
         for box in objects_boxes:
-            min_row, min_col, max_row, max_col = box
-            # max used so we don't paint rectangle outside of image
-            # (max(min_col - 20, 0) mean that we want to see some area around in case we lose some part of object
-            # max_row - min_row + 50 add another area below and right of boxes
-            ax.add_patch(patches.Rectangle((max(min_col - 20, 0), max(min_row - 20, 0)), max_col - min_col + 30,
-                                           max_row - min_row + 50, linewidth=1, edgecolor='r', facecolor='none'))
+            ax.add_patch(patch_rectangle(box, 'r'))
+
         # TODO check we only have one figure
         for box in edge_boxes:
-            min_row, min_col, max_row, max_col = box
-            # max used so we don't paint rectangle outside of image
-            # (max(min_col - 20, 0) mean that we want to see some area around in case we lose some part of object
-            # max_row - min_row + 50 add another area below and right of boxes
-            ax.add_patch(patches.Rectangle((max(min_col - 20, 0), max(min_row - 20, 0)), max_col - min_col + 30,
-                                           max_row - min_row + 50, linewidth=1, edgecolor='b', facecolor='none'))
+            ax.add_patch(ax.add_patch(patch_rectangle(box, 'b'))
+                         )
         plt.show()
     cut_objects = cut_objects_from_image(img, objects_boxes)  # get objects images from bboxes
     figure = cut_figure(img, edge_boxes)  # get figure structure from its bboxes(find edges and fill holes)
@@ -66,6 +59,7 @@ def extract_fig_and_objects(img, show_boxes=False):
 
 def extract_fig_and_objects_example():  # example for figure and object classification function
     data = get_example_data()
+    indx_to_name = config.indx_to_object_name
     for elem in data:
         figure, _, class_objects = extract_fig_and_objects(elem, show_boxes=True)
         plt.imshow(figure, cmap='gray')
@@ -85,7 +79,8 @@ def slide_obj_over_fig(main_figure, obj, object_area):  # Brute force solution
             intersect = cv.bitwise_and(roi, obj.astype(int))  # check how we can place object
             if np.sum(intersect) == object_area:  # confirm we can place whole object
                 main_figure[pos_y:pos_y + obj_y, pos_x:pos_x + obj_x] = cv.bitwise_and(roi,
-                                                                                       255 - obj)  # paint object on figure
+                                                                                       255 - obj)  # paint object on
+                # figure
                 # so we can't use this area again
                 # we find location for this object on this figure, so we need to return location on figure and
                 # figure without used area
@@ -94,14 +89,13 @@ def slide_obj_over_fig(main_figure, obj, object_area):  # Brute force solution
     return (-1, -1), main_figure  # if we don't find place
 
 
-def run_epoch_stuff():  # function to show example working for first step
-    path = 'work/easy_img.jpg'
-    figures = "objects_figure"
-    objects_struct_paths = {0: "0.jpg", 1: "2.jpg", 2: "5.jpg", 3: "4.jpg", 4: "1.jpg", 5: "3.jpg", 6: "8.jpg",
-                            7: "7.jpg"}  # files with "good" object images
+def run_epoch_stuff(path=config.easy_test_img):  # function to show example working for first step
+
+    figures = config.objects_figures_folder
+    objects_struct_paths = config.objects_structure_files  # files with "good" object images
 
     img = imread(path)
-
+    indx_to_name = config.indx_to_object_name
     figure, fig_location, class_objects = extract_fig_and_objects(img, show_boxes=True)
 
     plt.imshow(figure, cmap='gray')
@@ -123,44 +117,24 @@ def run_epoch_stuff():  # function to show example working for first step
         area = np.sum(elem)
         object_areas.append(area)
 
-    object_loc = []
+    object_loc = []  # TODO REWORK WHOLE
     for obj, area in zip(objects_structures, object_areas):  # now we try to put objects inside figure
         (y, x), figure = slide_obj_over_fig(figure, obj, area)
         object_loc.append([y, x])
-        if x != -1:  # cant pu object inside.
+        if x != -1:  # cant put object inside.
             plt.imshow(figure, cmap='gray')
             plt.show()
         else:
             print("nope")
 
-    # for obj, location in zip(objects_structures, object_loc):  # plotting object images above figure
     y_fig, x_fig, *_ = fig_location[0]
-    # y, x = location
-    # obj_y, obj_x = obj.shape
     fig_y, fig_x = figure.shape
-        # there is a better way to do this. # TODO do it better
-        # here is main code of putting object image above figure image on initial image
-        # (x/y)_fig - place where our figure locate on image
-        # (y,x) - location of our object on image
-        # obj_(x,y) - size of object
-        # 255 * object <- paint white mask in place where is this object structure
-        # roi = img[y_fig + y:y_fig + y + obj_y, x_fig + x:x_fig + x + obj_x, :]
-
-        # img[y_fig + y:y_fig + y + obj_y, x_fig + x:x_fig + x + obj_x, 0] = figure
-        # img[y_fig + y:y_fig + y + obj_y, x_fig + x:x_fig + x + obj_x, 1] = figure
-        # img[y_fig + y:y_fig + y + obj_y, x_fig + x:x_fig + x + obj_x, 2] = figure
-    # plt.imshow(figure)
-    # plt.show()
-    img[y_fig:y_fig + fig_y, x_fig:x_fig + fig_x, 0] = 255 * figure
-    img[y_fig:y_fig + fig_y, x_fig:x_fig + fig_x, 1] = 255 * figure
-    img[y_fig:y_fig + fig_y, x_fig:x_fig + fig_x, 2] = 255 * figure
+    img[y_fig:y_fig + fig_y, x_fig:x_fig + fig_x, :] = gray2rgb(255 * figure)  # plot results on image
 
     plt.imshow(img)
     plt.show()
 
 
-indx_to_name = {0: "Значок", 1: "Пульт", 2: "Зажигалка", 3: "Медиатор", 4: "Шахматный конь", 5: "Крышка",
-                6: "Кубик", 7: "Батарейка"}
 run_epoch_stuff()
 
 # extract_fig_and_objects_example()
