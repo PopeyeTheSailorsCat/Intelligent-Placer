@@ -10,3 +10,9 @@ easy_test_img = 'work/easy_img.jpg'
 CNN_training_directory = 'classifyer_imgs'
 CNN_training_folders = ['1_cut', "2_cut", "3_cut", "4_cut", "5_cut", "6_cut", "7_cut", "8_cut"]
 example_data_path = "inputs_example"
+
+grid_search_y_positions = 20
+grid_search_x_positions = 20
+
+additional_x_for_cut = 0.01
+additional_y_for_cut = 0.01

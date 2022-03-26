@@ -87,9 +87,9 @@ def get_bboxes_example_show(show_data=True):  # example of usage get_object_and_
         edge_boxes, objects_boxes = get_object_and_figure_boxes(main_img)
         ax.flat[indx].imshow(main_img, cmap="gray")
         for box in objects_boxes:
-            ax.flat[indx].add_patch(patch_rectangle(box, 'r'))
+            ax.flat[indx].add_patch(patch_rectangle(box, 'r', main_img.shape))
         for box in edge_boxes:
-            ax.flat[indx].add_patch(patch_rectangle(box, 'b'))
+            ax.flat[indx].add_patch(patch_rectangle(box, 'b', main_img.shape))
     fix.tight_layout()
     plt.show()
 
@@ -102,13 +102,14 @@ def cut_objects_from_image(image, bboxes, resize=True):
     :param resize:
     :return:
     """
-    add_area = 10  # if we lost some part of object during detection
     images = []
     img_row, img_col, _ = image.shape
+    add_area_x = int(img_col * config.additional_x_for_cut)  # if we lost some part of object during detection
+    add_area_y = int(img_row * config.additional_y_for_cut)
     for box in bboxes:
         min_row, min_col, max_row, max_col = box
-        roi = image[max(min_row - add_area, 0): min(max_row + add_area, img_row),
-              max(min_col - add_area, 0): min(max_col + add_area, img_col)]
+        roi = image[max(min_row - add_area_y, 0): min(max_row + add_area_y, img_row),
+              max(min_col - add_area_x, 0): min(max_col + add_area_x, img_col)]
         im = Image.fromarray(np.uint8(roi))
         expected_size = config.CNN_expected_img_size
         if resize:

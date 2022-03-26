@@ -1,6 +1,5 @@
 import os
 from skimage.color import rgb2gray, gray2rgb
-import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -32,7 +31,7 @@ def classify_objects(cut_objects, classes=8):  # interface of using CNN
 def extract_fig_and_objects(img, show_boxes=False):
     """
     This function , find figure location  and extract figure structure
-    Also it finds, extract and classifies objects. Maybe too much for one func # TODO split function
+    Also it finds, extract and classifies objects.
     :param img:
     :param show_boxes:
     :return: figure - figure structure in matrix,
@@ -44,12 +43,11 @@ def extract_fig_and_objects(img, show_boxes=False):
         fig, ax = plt.subplots()
         ax.imshow(img)
         for box in objects_boxes:
-            ax.add_patch(patch_rectangle(box, 'r'))
+            ax.add_patch(patch_rectangle(box, 'r', img.shape))
 
         # TODO check we only have one figure
         for box in edge_boxes:
-            ax.add_patch(ax.add_patch(patch_rectangle(box, 'b'))
-                         )
+            ax.add_patch(ax.add_patch(patch_rectangle(box, 'b',img.shape)))
         plt.show()
     cut_objects = cut_objects_from_image(img, objects_boxes)  # get objects images from bboxes
     figure = cut_figure(img, edge_boxes)  # get figure structure from its bboxes(find edges and fill holes)
@@ -73,15 +71,14 @@ def slide_obj_over_fig(main_figure, obj, object_area):  # Brute force solution
     # just slide object structure image above figure image to find place, where we can place object.
     fig_y, fig_x = main_figure.shape
     obj_y, obj_x = obj.shape
-    for pos_y in range(0, fig_y - obj_y, 20):  # grid for y
-        for pos_x in range(0, fig_x - obj_x, 20):  # grid for x
+    y_grid, x_grid = config.grid_search_y_positions, config.grid_search_x_positions
+    for pos_y in range(0, fig_y - obj_y, y_grid):  # grid for y
+        for pos_x in range(0, fig_x - obj_x, x_grid):  # grid for x
             roi = main_figure[pos_y:pos_y + obj_y, pos_x:pos_x + obj_x].astype(int)  # take area from figure
             intersect = cv.bitwise_and(roi, obj.astype(int))  # check how we can place object
             if np.sum(intersect) == object_area:  # confirm we can place whole object
-                main_figure[pos_y:pos_y + obj_y, pos_x:pos_x + obj_x] = cv.bitwise_and(roi,
-                                                                                       255 - obj)  # paint object on
-                # figure
-                # so we can't use this area again
+                main_figure[pos_y:pos_y + obj_y, pos_x:pos_x + obj_x] = cv.bitwise_and(roi, 255 - obj)
+                # paint object on figure, so we can't use this area again
                 # we find location for this object on this figure, so we need to return location on figure and
                 # figure without used area
                 return (pos_y, pos_x), main_figure
@@ -107,7 +104,7 @@ def run_epoch_stuff(path=config.easy_test_img):  # function to show example work
         struct = imread(os.path.join(figures, objects_struct_paths[obj_indx]))  # getting this object "good" struct
         plt.imshow(struct, cmap='gray')
         plt.show()
-        struct = struct / 255 > 0  # maybe TODO, but this make me feel safe about mask
+        struct = struct / 255 > 0  # this make me feel safe about mask. Some of them I fix in Paint...
         objects_structures.append(struct)
         print(round(obj[obj_indx], 3), indx_to_name[obj_indx])  # show our confidence in prediction
         # TODO work bad confidence cases
@@ -130,7 +127,6 @@ def run_epoch_stuff(path=config.easy_test_img):  # function to show example work
     y_fig, x_fig, *_ = fig_location[0]
     fig_y, fig_x = figure.shape
     img[y_fig:y_fig + fig_y, x_fig:x_fig + fig_x, :] = gray2rgb(255 * figure)  # plot results on image
-
     plt.imshow(img)
     plt.show()
 
